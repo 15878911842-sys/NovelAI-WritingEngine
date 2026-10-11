@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovelAI Pro · 小说创作工作台</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --panel: #ffffff;
+      --panel-soft: #eef4ff;
+      --border: #dfe7f3;
+      --text: #1f2a37;
+      --muted: #6b7280;
+      --primary: #1f6feb;
+      --primary-strong: #0d4fcf;
+      --success: #149b5f;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow: 0 14px 28px rgba(16, 27, 45, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #eef3ff 0%, #edf4f5 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+      color: #f3f4f6;
+      padding: 26px 18px;
+      box-shadow: inset -1px 0 0 rgba(255,255,255,0.04);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #5aa9ff, #3b82f6);
+      box-shadow: 0 10px 18px rgba(59,130,246,0.4);
+      font-size: 18px;
+    }
+
+    .nav-group {
+      margin-top: 18px;
+    }
+
+    .nav-title {
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #9ca3af;
+      padding: 0 10px 10px;
+      font-weight: 700;
+    }
+
+    .nav-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      text-align: left;
+      padding: 12px 12px;
+      margin: 2px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-item.active,
+    .nav-item:hover {
+      background: rgba(255,255,255,0.08);
+      box-shadow: inset 2px 0 0 #5aa9ff;
+    }
+
+    .content {
+      padding: 24px 28px;
+      overflow: auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      font-size: 14px;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      box-shadow: 0 12px 16px rgba(31,111,235,0.22);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #1ea76e, #0f8c5d);
+      color: #fff;
+      box-shadow: 0 12px 16px rgba(20,155,95,0.18);
+    }
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      box-shadow: 0 12px 16px rgba(217,119,6,0.18);
+    }
+    .btn-muted {
+      background: #edf2fa;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background: var(--panel-soft);
+      border-color: #b9d5ff;
+      color: var(--primary-strong);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge.blue { background: #e0f2fe; color: #075985; }
+    .badge.green { background: #dcfce7; color: #166534; }
+    .badge.orange { background: #ffedd5; color: #9a4d00; }
+    .badge.red { background: #fee2e2; color: #991b1b; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #8ab6ff;
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+    }
+
+    textarea { min-height: 110px; resize: vertical; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .score-box {
+      background: linear-gradient(180deg, #f8fbff 0%, #edf4ff 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .score-box .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.75px;
+    }
+
+    .score-box .value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-strong);
+    }
+
+    .progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #e5edf7;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+    }
+
+    .result-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      line-height: 1.9;
+      font-size: 14px;
+      color: var(--text);
+      white-space: pre-wrap;
+      margin-top: 16px;
+      min-height: 200px;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border-left: 4px solid;
+      margin: 14px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .alert.info { background: #e0f2fe; border-color: #0ea5e9; color: #0c4a6e; }
+    .alert.success { background: #dcfce7; border-color: #16a34a; color: #166534; }
+    .alert.warning { background: #fff7ed; border-color: #f59e0b; color: #9a4d00; }
+
+    @media (max-width: 920px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 12px; }
+      .content { padding: 18px; }
+      .score-grid { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">✒</div>
+        <div>NovelAI Pro</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">项目管理</div>
+        <button class="nav-item active" data-target="dashboard">📚 我的小说</button>
+        <button class="nav-item" data-target="new-project">➕ 新建项目</button>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">创作工具</div>
+        <button class="nav-item" data-target="characters">👥 人物卡</button>
+        <button class="nav-item" data-target="outline">📋 大纲规划</button>
+        <button class="nav-item" data-target="generate">✨ 章节生成</button>
+        <button class="nav-item" data-target="rewrite">🎨 章节改写</button>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">数据分析</div>
+        <button class="nav-item" data-target="quality">📊 质量检测</button>
+        <button class="nav-item" data-target="history">📜 版本历史</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="header">
+        <div class="page-title" id="pageTitle">我的小说</div>
+        <div class="header-actions">
+          <button class="btn btn-primary">📥 导出</button>
+          <button class="btn btn-muted" id="saveDraftBtn">💾 保存草稿</button>
+        </div>
+      </div>
+
+      <section id="dashboard" class="content-panel">
+        <div class="panel">
+          <div class="section-title">当前作品</div>
+          <div class="grid" id="projectGrid"></div>
+        </div>
+      </section>
+
+      <section id="new-project" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">创建新小说项目</div>
+          <div class="form-grid">
+            <div>
+              <label>作品名称</label>
+              <input id="projectName" value="互换了身体的我们" />
+            </div>
+            <div>
+              <label>作品类型</label>
+              <select id="projectType">
+                <option>原创-纯爱-近代现代-轻小说</option>
+                <option>原创-校园甜宠</option>
+                <option>原创-治愈</option>
+              </select>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>一句话简介</label>
+              <input id="projectSummary" value="高冷会长与问题学弟意外互换了身体！" />
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>全书大纲</label>
+              <textarea id="projectOutline">第一卷：交错的心跳（1-30章）
+第二卷：渐近的距离（31-60章）
+第三卷：逆转的真心（61-80章）</textarea>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-success" id="createProjectBtn">✅ 创建项目</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="characters" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">人物卡管理</div>
+          <div class="tabs">
+            <div class="tab active">角色卡</div>
+            <div class="tab">关系图</div>
+          </div>
+
+          <div class="grid" id="characterGrid"></div>
+
+          <div style="margin-top: 18px;">
+            <div class="section-title" style="font-size:16px; margin-bottom:10px;">新增人物</div>
+            <div class="form-grid">
+              <div>
+                <label>人物名称</label>
+                <input id="charName" placeholder="例：御影真澄" />
+              </div>
+              <div>
+                <label>角色定位</label>
+                <input id="charRole" placeholder="例：学生会会长 / 问题学弟" />
+              </div>
+              <div>
+                <label>年龄</label>
+                <input id="charAge" type="number" placeholder="18" />
+              </div>
+              <div>
+                <label>性格</label>
+                <input id="charPersonality" placeholder="例：冷静,完美主义,傲娇" />
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <label>背景故事</label>
+                <textarea id="charBackground" placeholder="写清楚家庭背景、成长经历和心结..."></textarea>
+              </div>
+              <div style="grid-column: 1 / -1;">
+                <label>说话语气</label>
+                <input id="charTone" placeholder="例：克制、真实、带一点锋利" />
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-success" id="addCharacterBtn">✅ 保存人物卡</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="outline" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">全书大纲 / 分章规划</div>
+          <div class="alert info">💡 真实作品需要保持上下文一致：人物成长线要跟卷章规划一致，避免后期反复改写。</div>
+          <div class="form-grid">
+            <div style="grid-column: 1 / -1;">
+              <label>卷章规划</label>
+              <textarea id="outlineVol">第一卷：交错的心跳（1-30章）
+核心剧情：意外互换，爆笑适应期。两人不得不在天台临时协商“角色扮演”的细节。
+
+第二卷：渐近的距离（31-60章）
+核心剧情：互换变得间歇性且不稳定，两人开始寻找原因，并以“另一个自己”的身份介入彼此的过去。
+
+第三卷：逆转的真心（61-80章）
+核心剧情：寻找互换的真相，外部危机逼近，最终接受真心与回归。</textarea>
+            </div>
+            <div>
+              <label>章节编号</label>
+              <input id="chapterNo" type="number" value="25" />
+            </div>
+            <div>
+              <label>章节标题</label>
+              <input id="chapterTitle" value="项圈是谁戴的" />
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>本章大纲</label>
+              <textarea id="chapterOutline">御影在后院喂猫时发现佐藤躲在灌木丛里，原来猫项圈就是佐藤给它买的；佐藤承认他曾经被欺负过、躲进后院哭泣；御影思考“真正替佐仓理解了他”这件事。</textarea>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-success" id="saveOutlineBtn">💾 保存规划</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="generate" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">AI 智能章节生成</div>
+          <div class="alert warning">⚠️ 本模块会优先保证“上下文连贯、人物一致、情绪真实”，而不是堆砌模板化句式。</div>
+
+          <div class="form-grid">
+            <div>
+              <label>生成模式</label>
+              <select id="generateMode">
+                <option value="auto">自动根据大纲生成</option>
+                <option value="manual">手动指定章节</option>
+              </select>
+            </div>
+            <div>
+              <label>章节编号</label>
+              <input id="genChapterNo" type="number" value="26" />
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>章节标题</label>
+              <input id="genTitle" value="天台外的松动" />
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>章节大纲</label>
+              <textarea id="genOutline">天气转晴，御影和佐仓在天台看着城市，谈及彼此在对方眼里看到的“真实”；两人产生更深层的理解与羞怯，暗示下一章将迈向更明确的情愫。</textarea>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button class="btn btn-primary" id="generateBtn">🚀 生成章节</button>
+            <button class="btn btn-muted">🧠 上下文链接检测</button>
+          </div>
+
+          <div id="generateResult" class="result-box" style="display:none;"></div>
+        </div>
+      </section>
+
+      <section id="rewrite" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">章节改写（去 AI 味）</div>
+          <div class="alert success">✅ 重点：删除机器感句式，增强人物细节、情绪和语境真实感。</div>
+          <div class="form-grid">
+            <div style="grid-column: 1 / -1;">
+              <label>原始章节内容</label>
+              <textarea id="rewriteInput" placeholder="把章节原文贴进来...">两个人站在操场边，风从海边吹来，带着潮湿的味道。御影和佐仓都知道问题不在于谁赢谁输，而在于谁终于明白对方的脆弱。</textarea>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="btn btn-warning" id="rewriteBtn">🎨 改写章节</button>
+          </div>
+          <div id="rewriteResult" class="result-box" style="display:none;"></div>
+        </div>
+      </section>
+
+      <section id="quality" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">章节质量检测</div>
+          <div class="score-grid">
+            <div class="score-box">
+              <div class="label">原创度</div>
+              <div class="value">87%</div>
+              <div class="progress"><span style="width:87%"></span></div>
+            </div>
+            <div class="score-box">
+              <div class="label">人物一致</div>
+              <div class="value">92%</div>
+              <div class="progress"><span style="width:92%"></span></div>
+            </div>
+            <div class="score-box">
+              <div class="label">上下文连接</div>
+              <div class="value">89%</div>
+              <div class="progress"><span style="width:89%"></span></div>
+            </div>
+            <div class="score-box">
+              <div class="label">AI 味过滤</div>
+              <div class="value">88%</div>
+              <div class="progress"><span style="width:88%"></span></div>
+            </div>
+          </div>
+
+          <div class="alert success" style="margin-top:18px;">
+            结论：当前章节整体稳定，人物语气保持一致，情绪推进自然，AI 味控制在可接受范围内。<br />
+            建议：在结尾处增加一点环境描写和微妙心理活动，以提升真实性。
+          </div>
+        </div>
+      </section>
+
+      <section id="history" class="content-panel" style="display:none;">
+        <div class="panel">
+          <div class="section-title">版本历史</div>
+          <div class="grid">
+            <div class="card">
+              <h3>第25章 · 项圈是谁戴的</h3>
+              <p>已稳定版本，佐藤线已收束，御影逐渐理解佐仓的真实处境。</p>
+              <div class="badges">
+                <span class="badge blue">已完成</span>
+                <span class="badge green">人物一致性高</span>
+              </div>
+            </div>
+            <div class="card">
+              <h3>第26章 · 天台外的松动</h3>
+              <p>待生成。重点推进两人相互理解与情绪接触。</p>
+              <div class="badges">
+                <span class="badge orange">待生成</span>
+                <span class="badge blue">需要上下文衔接</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const appState = {
+      selectedProject: '互换了身体的我们',
+      characters: [
+        {
+          name: '御影真澄',
+          role: '学生会会长',
+          age: 18,
+          personality: ['冷静', '完美主义', '缺乏安全感'],
+          background: '从小在财阀环境中长大，学会压抑情绪，渴望被理解。',
+          tone: '克制、真实、带一点锋利'
+        },
+        {
+          name: '佐仓彻',
+          role: '二年级问题学弟',
+          age: 17,
+          personality: ['嘴硬', '善良', '叛逆', '自尊心强'],
+          background: '来自普通家庭，曾被霸凌，习惯用打架和翻墙掩饰脆弱。',
+          tone: '直率、热烈、偶尔撒娇'
+        }
+      ]
+    };
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const panels = document.querySelectorAll('.content-panel');
+    const pageTitle = document.getElementById('pageTitle');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        const target = item.dataset.target;
+        panels.forEach(panel => {
+          panel.style.display = panel.id === target ? 'block' : 'none';
+        });
+
+        const map = {
+          dashboard: '我的小说',
+          'new-project': '新建项目',
+          characters: '人物卡',
+          outline: '大纲规划',
+          generate: '章节生成',
+          rewrite: '章节改写',
+          quality: '质量检测',
+          history: '版本历史'
+        };
+        pageTitle.textContent = map[target] || '我的小说';
+      });
+    });
+
+    function renderProjects() {
+      const grid = document.getElementById('projectGrid');
+      grid.innerHTML = `
+        <div class="card">
+          <h3>互换了身体的我们</h3>
+          <p>高冷会长与问题学弟意外互换了身体，校园甜宠、双向救赎、治愈系校园轻小说。</p>
+          <div class="badges">
+            <span class="badge blue">轻小说</span>
+            <span class="badge green">校园甜宠</span>
+            <span class="badge orange">双向暗恋</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCharacters() {
+      const grid = document.getElementById('characterGrid');
+      grid.innerHTML = appState.characters.map(character => `
+        <div class="card">
+          <h3>${character.name}</h3>
+          <p><strong>${character.role}</strong><br />年龄：${character.age || '未知'}</p>
+          <p>性格：${character.personality.join(' / ')}</p>
+          <p>${character.background}</p>
+          <div class="badges">
+            <span class="badge blue">${character.tone}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('createProjectBtn').addEventListener('click', () => {
+      const name = document.getElementById('projectName').value || '新小说';
+      alert(`✅ 已创建项目：${name}`);
+      renderProjects();
+      navItems[0].click();
+    });
+
+    document.getElementById('addCharacterBtn').addEventListener('click', () => {
+      const name = document.getElementById('charName').value.trim();
+      if (!name) {
+        alert('请填写人物姓名');
+        return;
+      }
+      appState.characters.push({
+        name,
+        role: document.getElementById('charRole').value || '角色',
+        age: Number(document.getElementById('charAge').value || 0),
+        personality: (document.getElementById('charPersonality').value || '').split(',').map(v => v.trim()).filter(Boolean),
+        background: document.getElementById('charBackground').value || '暂无背景故事。',
+        tone: document.getElementById('charTone').value || '自然、真实'
+      });
+      renderCharacters();
+      alert(`✅ 已添加人物：${name}`);
+    });
+
+    document.getElementById('saveOutlineBtn').addEventListener('click', () => {
+      alert('💾 大纲已保存');
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const title = document.getElementById('genTitle').value || '新章节';
+      const outline = document.getElementById('genOutline').value || '暂无大纲';
+      const result = `第${document.getElementById('genChapterNo').value || 26}章 《${title}》\n\n${outline}\n\n风从操场边吹过，留下潮湿的海味。御影站在天台边缘，时间像被压成薄薄一层，所有的误会都不再像原来那么尖锐。佐仓的目光从来不肯轻易落在别人身上，可在这个瞬间，他忽然站得比之前更自然，像突然不再想躲开。\n\n“你以���我不在乎你？”佐仓低声问道。\n\n御影没有立刻回答。他抬起眼，忽然看见自己曾以为完全不可能理解的东西，正在那双眼睛里慢慢折射出来。\n\n“我知道你在乎。”他说。\n\n那一瞬间，天台上的风似乎都变轻了。两个人都不说话，只是站在同一片风里，心跳慢了一点，却比之前明显得多。`;
+      document.getElementById('generateResult').style.display = 'block';
+      document.getElementById('generateResult').textContent = result;
+    });
+
+    document.getElementById('rewriteBtn').addEventListener('click', () => {
+      const raw = document.getElementById('rewriteInput').value || '';
+      let refined = raw
+        .replace(/与此同时/g, '此时')
+        .replace(/不禁得/g, '不由得')
+        .replace(/仿佛/g, '似乎')
+        .replace(/突然之间/g, '突然')
+        .replace(/令人不禁/g, '让人')
+        .replace(/一切都像/g, '好像');
+      document.getElementById('rewriteResult').style.display = 'block';
+      document.getElementById('rewriteResult').textContent = refined + '\n\n【AI 味过滤结论】AI 模板句式已清理，人物真实感增强，情绪更加自然。';
+    });
+
+    document.getElementById('saveDraftBtn').addEventListener('click', () => {
+      alert('💾 已保存草稿');
+    });
+
+    renderProjects();
+    renderCharacters();
+  </script>
+</body>
+</html>
